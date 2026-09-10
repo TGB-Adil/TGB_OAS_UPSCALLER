@@ -1,0 +1,25 @@
+```toml
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tgb-oas-upscaller"
+version = "0.1.0"
+description = "Reusable TGB OAS API client and OAS upscaling module"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "requests>=2.31.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "python-dotenv>=1.0.0",
+    "pytest>=8.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+```
