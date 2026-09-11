@@ -11,6 +11,11 @@ class OASClient:
         "s-oas-code-to-wgs84-coordinates-self-n0-acs/"
     )
 
+    @classmethod
+    def get_endpoint(cls) -> str:
+        return cls.ENDPOINT
+    
+    
     def __init__(self,api_key: str,timeout: int = 1000):
         if not api_key or not api_key.strip():
             raise ValueError("OAS API key is required.")
