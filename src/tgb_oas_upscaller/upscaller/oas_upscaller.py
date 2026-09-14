@@ -123,11 +123,8 @@ class OASUpscaler:
 
         return missing_codes
 
-    def build_hierarchy_upwards(
-        self,
-        oas_codes: list[str],
-        source_size: str,
-    ) -> dict[str, set[str]]:
+    def build_hierarchy_upwards(self,oas_codes: list[str],source_size: str,) -> dict[str, set[str]]:
+
 
         sizes = (
             self.layer_manager.ORDERED_SIZES
@@ -156,15 +153,27 @@ class OASUpscaler:
 
             child_size = sizes[index]
             parent_size = sizes[index - 1]
+            
+            parent_table = self.layer_manager.get_table_for_size(parent_size)
+            
+            existing_parent_rows = self.connection.execute(
+                f"""
+                SELECT oas_code 
+                FROM "{parent_table}"
+                """
+            ).fetchall()
+            
+            existing_parent_codes = {
+                row[0]
+                for row in existing_parent_rows
+            }
 
             hierarchy.setdefault(
                 parent_size,
                 set()
             )
 
-            for child_oas in hierarchy[
-                child_size
-            ]:
+            for child_oas in hierarchy[child_size]:
 
                 parent_oas = (
                     self.get_parent_areaseal(
@@ -172,18 +181,15 @@ class OASUpscaler:
                         parent_size
                     )
                 )
-
-                hierarchy[
-                    parent_size
-                ].add(parent_oas)
+                if parent_oas in existing_parent_codes:
+                    continue
+                
+                hierarchy[parent_size].add(parent_oas)
 
         return hierarchy
 
 
-    def save_hierarchy(
-        self,
-        hierarchy: dict[str, set[str]]
-    ) -> None:
+    def save_hierarchy(self,hierarchy: dict[str, set[str]]) -> None:
 
         for size, codes in hierarchy.items():
 
@@ -246,11 +252,7 @@ class OASUpscaler:
 
         self.connection.commit()
 
-    def _ensure_hierarchy_for_code(
-        self,
-        as_code: str,
-        size: str,
-    ) -> None:
+    def _ensure_hierarchy_for_code(self,as_code: str,size: str,) -> None:
 
         current_code = as_code
         current_size = size
@@ -369,10 +371,7 @@ class OASUpscaler:
 
         self.connection.commit()
 
-    def fill_coordinates(
-        self,
-        batch_size: int = 10000,
-    ) -> None:
+    def fill_coordinates(self,batch_size: int = 10000,) -> None:
 
         for size in (
             self.layer_manager.ORDERED_SIZES
